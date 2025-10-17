@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Calendar, FileText, Trash2, Paperclip, Eye, Search, Edit, CheckCircle2 } from "lucide-react"
 import { getTaskStatus, type Task, type TaskFile, type TaskStatus } from "@/lib/types"
+import Link from "next/link"
 import { format } from "date-fns"
 import { useState, useMemo } from "react"
 import { FileViewerDialog } from "./file-viewer-dialog"
@@ -21,7 +22,7 @@ interface TaskListProps {
 }
 
 export function TaskList({ showCompleted = false }: TaskListProps) {
-  const { tasks, deleteTask, toggleTaskCompletion } = useTasks()
+  const { tasks, deleteTask, toggleTaskCompletion, isLoading, error } = useTasks()
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [viewingFile, setViewingFile] = useState<TaskFile | null>(null)
   const [fileDialogOpen, setFileDialogOpen] = useState(false)
@@ -113,12 +114,44 @@ export function TaskList({ showCompleted = false }: TaskListProps) {
     setDeleteDialogOpen(true)
   }
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (taskToDelete) {
-      deleteTask(taskToDelete.id)
+      await deleteTask(taskToDelete.id)
       setTaskToDelete(null)
     }
     setDeleteDialogOpen(false)
+  }
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="flex flex-col items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
+          <p className="text-lg font-medium text-muted-foreground">Loading tasks...</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="flex flex-col items-center justify-center py-12">
+          <p className="text-lg font-medium text-destructive mb-2">Error loading tasks</p>
+          <p className="text-sm text-muted-foreground mb-4">{error}</p>
+          {error.includes('sign in') && (
+            <div className="flex gap-2">
+              <Button asChild>
+                <Link href="/auth/login">Sign In</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/auth/register">Create Account</Link>
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    )
   }
 
   if (tasks.filter((task) => task.completed === showCompleted).length === 0) {
@@ -209,7 +242,9 @@ export function TaskList({ showCompleted = false }: TaskListProps) {
                             <CardTitle
                               className={cn("text-xl", task.completed && "line-through text-muted-foreground")}
                             >
-                              {task.title}
+                              <Link href={`/tasks/${task.id}`} className="hover:underline">
+                                {task.title}
+                              </Link>
                             </CardTitle>
                             {!showCompleted && (
                               <Badge className={getStatusColor(status)}>{getStatusLabel(status)}</Badge>

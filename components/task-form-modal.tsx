@@ -34,6 +34,7 @@ export function TaskFormModal({ editTask, open: controlledOpen, onOpenChange, tr
   const [endDate, setEndDate] = useState("")
   const [files, setFiles] = useState<TaskFile[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [color, setColor] = useState<string>("#3b82f6")
 
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen
   const setOpen = onOpenChange || setInternalOpen
@@ -45,6 +46,7 @@ export function TaskFormModal({ editTask, open: controlledOpen, onOpenChange, tr
       setStartDate(new Date(editTask.startDate).toISOString().split("T")[0])
       setEndDate(new Date(editTask.endDate).toISOString().split("T")[0])
       setFiles(editTask.files)
+      setColor(editTask.color ?? "#3b82f6")
     } else if (!open) {
       // Reset form when dialog closes
       setTitle("")
@@ -52,6 +54,7 @@ export function TaskFormModal({ editTask, open: controlledOpen, onOpenChange, tr
       setStartDate("")
       setEndDate("")
       setFiles([])
+      setColor("#3b82f6")
     }
   }, [editTask, open])
 
@@ -102,6 +105,7 @@ export function TaskFormModal({ editTask, open: controlledOpen, onOpenChange, tr
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         files,
+        color,
       })
     } else {
       addTask({
@@ -111,6 +115,7 @@ export function TaskFormModal({ editTask, open: controlledOpen, onOpenChange, tr
         endDate: new Date(endDate),
         files,
         completed: false,
+        color,
       })
     }
 
@@ -120,6 +125,7 @@ export function TaskFormModal({ editTask, open: controlledOpen, onOpenChange, tr
     setStartDate("")
     setEndDate("")
     setFiles([])
+    setColor("#3b82f6")
     setIsSubmitting(false)
     setOpen(false)
   }
@@ -186,6 +192,44 @@ export function TaskFormModal({ editTask, open: controlledOpen, onOpenChange, tr
             <div className="space-y-2">
               <Label htmlFor="endDate">End Date / Deadline</Label>
               <Input id="endDate" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required />
+            </div>
+          </div>
+
+          {/* Color selection */}
+          <div className="space-y-2">
+            <Label htmlFor="color">Task Color</Label>
+            <div className="flex items-center gap-3 flex-wrap">
+              {[
+                "#3b82f6", // blue-500
+                "#10b981", // emerald-500
+                "#f59e0b", // amber-500
+                "#ef4444", // red-500
+                "#8b5cf6", // violet-500
+                "#14b8a6", // teal-500
+                "#f97316", // orange-500
+                "#22c55e", // green-500
+              ].map((c) => (
+                <button
+                  type="button"
+                  key={c}
+                  onClick={() => setColor(c)}
+                  className={`h-7 w-7 rounded-full border transition-transform hover:scale-105 ${
+                    color === c ? "ring-2 ring-offset-2 ring-primary" : ""
+                  }`}
+                  style={{ backgroundColor: c }}
+                  aria-label={`Select color ${c}`}
+                />
+              ))}
+              <div className="flex items-center gap-2">
+                <Input
+                  id="color"
+                  type="color"
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                  className="h-9 w-12 p-1 cursor-pointer"
+                />
+                <span className="text-xs text-muted-foreground">Custom</span>
+              </div>
             </div>
           </div>
 

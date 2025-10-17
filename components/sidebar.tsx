@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
+import { signOut } from "next-auth/react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,10 +28,21 @@ export function Sidebar() {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
-  const handleLogout = () => {
-    localStorage.clear()
-    window.location.reload()
+  const handleLogout = async () => {
+    setIsLoggingOut(true)
+    try {
+      await signOut({ 
+        callbackUrl: '/auth/login',
+        redirect: true 
+      })
+    } catch (error) {
+      console.error('Logout error:', error)
+      // Fallback to manual logout
+      localStorage.clear()
+      window.location.href = '/auth/login'
+    }
   }
 
   return (
@@ -104,8 +116,12 @@ export function Sidebar() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleLogout} className="bg-destructive hover:bg-destructive/90">
-              Logout
+            <AlertDialogAction 
+              onClick={handleLogout} 
+              className="bg-destructive hover:bg-destructive/90"
+              disabled={isLoggingOut}
+            >
+              {isLoggingOut ? 'Logging out...' : 'Logout'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

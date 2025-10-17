@@ -107,7 +107,10 @@ export function Calendar({ selectedDate, onDateSelect, className, tasks = [] }: 
         isStart,
         isEnd,
         isMiddle,
-        color: task.completed ? 'bg-green-500' : 
+        colorClass: undefined,
+        colorHex: (task as any).color as string | undefined,
+        // fallback tailwind color classes if no custom color present
+        fallbackClass: task.completed ? 'bg-green-500' : 
                isStart ? 'bg-blue-500' : 
                isEnd ? 'bg-red-500' : 'bg-yellow-500'
       }
@@ -164,6 +167,10 @@ export function Calendar({ selectedDate, onDateSelect, className, tasks = [] }: 
         {/* Current month days */}
         {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
           const taskIndicators = getTaskIndicators(day)
+          // Always render start-date bars first, then others
+          const startIndicators = taskIndicators.filter((ti: any) => ti.isStart)
+          const otherIndicators = taskIndicators.filter((ti: any) => !ti.isStart)
+          const orderedIndicators = [...startIndicators, ...otherIndicators]
           return (
             <Card
               key={day}
@@ -187,21 +194,22 @@ export function Calendar({ selectedDate, onDateSelect, className, tasks = [] }: 
                 
                 {/* Task indicators */}
                 <div className="flex-1 flex flex-col gap-0.5">
-                  {taskIndicators.slice(0, 3).map((task, index) => (
+                  {orderedIndicators.slice(0, 3).map((task: any, index) => (
                     <div
                       key={`${task.id}-${index}`}
                       className={cn(
                         "h-1.5 rounded-full",
-                        task.color,
+                        task.colorHex ? undefined : task.fallbackClass,
                         task.isStart && "rounded-l-full",
                         task.isEnd && "rounded-r-full"
                       )}
+                      style={task.colorHex ? { backgroundColor: task.colorHex } : undefined}
                       title={task.title}
                     />
                   ))}
-                  {taskIndicators.length > 3 && (
+                  {orderedIndicators.length > 3 && (
                     <div className="text-xs text-muted-foreground text-center">
-                      +{taskIndicators.length - 3} more
+                      +{orderedIndicators.length - 3} more
                     </div>
                   )}
                 </div>

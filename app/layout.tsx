@@ -3,7 +3,8 @@ import type { Metadata } from "next"
 import { Inter, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 import { TaskProvider } from "@/contexts/task-context"
-import { Sidebar } from "@/components/sidebar"
+import { AppChrome } from "@/components/app-chrome"
+import { SessionProvider } from "@/components/session-provider"
 
 const inter = Inter({
   variable: "--font-inter",
@@ -29,10 +30,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="antialiased">
-        <TaskProvider>
-          <Sidebar />
-          {children}
-        </TaskProvider>
+        <SessionProvider>
+          <TaskProvider>
+            <AppChrome>{children}</AppChrome>
+          </TaskProvider>
+        </SessionProvider>
       </body>
     </html>
   )

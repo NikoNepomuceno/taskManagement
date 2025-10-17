@@ -8,15 +8,19 @@ export interface TaskFile {
 }
 
 export interface Task {
-  id: string
+  _id?: string
+  id?: string // For backward compatibility
   title: string
-  description: string
+  description?: string
   startDate: Date
   endDate: Date
   files: TaskFile[]
   createdAt: Date
   updatedAt: Date
   completed: boolean
+  color?: string
+  priority?: 'low' | 'medium' | 'high'
+  dueDate?: Date // For database compatibility
 }
 
 export type TaskStatus = "pending" | "on-track" | "approaching" | "urgent" | "overdue"

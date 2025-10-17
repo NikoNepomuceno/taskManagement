@@ -13,7 +13,7 @@ import { Upload, X } from "lucide-react"
 import type { TaskFile } from "@/lib/types"
 
 export function TaskForm() {
-  const { addTask } = useTasks()
+  const { addTask, isLoading, error } = useTasks()
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [startDate, setStartDate] = useState("")
@@ -55,27 +55,32 @@ export function TaskForm() {
     setFiles((prev) => prev.filter((f) => f.id !== fileId))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!title || !startDate || !endDate) return
 
     setIsSubmitting(true)
 
-    addTask({
-      title,
-      description,
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
-      files,
-    })
+    try {
+      await addTask({
+        title,
+        description,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        files,
+      })
 
-    // Reset form
-    setTitle("")
-    setDescription("")
-    setStartDate("")
-    setEndDate("")
-    setFiles([])
-    setIsSubmitting(false)
+      // Reset form only on success
+      setTitle("")
+      setDescription("")
+      setStartDate("")
+      setEndDate("")
+      setFiles([])
+    } catch (err) {
+      console.error('Error creating task:', err)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const formatFileSize = (bytes: number) => {
@@ -165,8 +170,14 @@ export function TaskForm() {
             </div>
           )}
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Creating..." : "Create Task"}
+          {error && (
+            <div className="text-destructive text-sm bg-destructive/10 p-3 rounded-md">
+              {error}
+            </div>
+          )}
+          
+          <Button type="submit" className="w-full" disabled={isSubmitting || isLoading}>
+            {isSubmitting || isLoading ? "Creating..." : "Create Task"}
           </Button>
         </form>
       </CardContent>

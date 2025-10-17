@@ -1,76 +1,196 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { useSession } from "next-auth/react"
 import type { Task, TaskFile } from "@/lib/types"
 
 interface TaskContextType {
   tasks: Task[]
-  addTask: (task: Omit<Task, "id" | "createdAt" | "updatedAt">) => void
-  updateTask: (id: string, task: Partial<Task>) => void
-  deleteTask: (id: string) => void
-  addFileToTask: (taskId: string, file: TaskFile) => void
-  removeFileFromTask: (taskId: string, fileId: string) => void
-  toggleTaskCompletion: (id: string) => void
+  addTask: (task: Omit<Task, "id" | "_id" | "createdAt" | "updatedAt">) => Promise<void>
+  updateTask: (id: string, task: Partial<Task>) => Promise<void>
+  deleteTask: (id: string) => Promise<void>
+  addFileToTask: (taskId: string, file: TaskFile) => Promise<void>
+  removeFileFromTask: (taskId: string, fileId: string) => Promise<void>
+  toggleTaskCompletion: (id: string) => Promise<void>
+  isLoading: boolean
+  error: string | null
+  refetchTasks: () => Promise<void>
 }
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined)
 
 export function TaskProvider({ children }: { children: ReactNode }) {
   const [tasks, setTasks] = useState<Task[]>([])
-  const [isLoaded, setIsLoaded] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const { data: session } = useSession()
 
-  // Load tasks from localStorage on mount
-  useEffect(() => {
-    const stored = localStorage.getItem("tasks")
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored)
-        // Convert date strings back to Date objects
-        const tasksWithDates = parsed.map((task: any) => ({
-          ...task,
-          startDate: new Date(task.startDate),
-          endDate: new Date(task.endDate),
-          createdAt: new Date(task.createdAt),
-          updatedAt: new Date(task.updatedAt),
-          files: task.files.map((file: any) => ({
-            ...file,
-            uploadedAt: new Date(file.uploadedAt),
-          })),
-        }))
-        setTasks(tasksWithDates)
-      } catch (error) {
-        console.error("Failed to load tasks:", error)
+  // Fetch tasks from database
+  const fetchTasks = async () => {
+    if (!session?.user?.email) {
+      console.log('No session or user email, skipping fetch')
+      setTasks([]) // Clear tasks when no session
+      return
+    }
+    
+    console.log('Fetching tasks for user:', session.user.email)
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await fetch('/api/tasks', { cache: 'no-store' })
+      if (!response.ok) {
+        if (response.status === 401) {
+          setError('Please sign in to view your tasks')
+          setTasks([])
+          return
+        }
+        if (response.status === 404) {
+          // Treat missing user/tasks as empty state rather than fatal error
+          setTasks([])
+          return
+        }
+        throw new Error(`Failed to fetch tasks (${response.status})`)
       }
+      const data = await response.json()
+      
+      // Convert database format to frontend format
+      const formattedTasks = data.map((task: any) => ({
+        ...task,
+        id: task._id, // Use _id as id for compatibility
+        startDate: new Date(task.startDate || task.dueDate),
+        endDate: new Date(task.endDate || task.dueDate),
+        createdAt: new Date(task.createdAt),
+        updatedAt: new Date(task.updatedAt),
+        files: task.attachments || [],
+        completed: task.completed || false,
+      }))
+      
+      setTasks(formattedTasks)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch tasks')
+      console.error('Error fetching tasks:', err)
+    } finally {
+      setIsLoading(false)
     }
-    setIsLoaded(true)
-  }, [])
+  }
 
-  // Save tasks to localStorage whenever they change
+  // Load tasks when session is available
   useEffect(() => {
-    if (isLoaded) {
-      localStorage.setItem("tasks", JSON.stringify(tasks))
+    if (session?.user?.email) {
+      console.log('Session available, fetching tasks')
+      fetchTasks()
+    } else {
+      console.log('No session, clearing tasks')
+      setTasks([])
     }
-  }, [tasks, isLoaded])
+  }, [session])
 
-  const addTask = (taskData: Omit<Task, "id" | "createdAt" | "updatedAt">) => {
-    const newTask: Task = {
-      ...taskData,
-      id: crypto.randomUUID(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
+  const addTask = async (taskData: Omit<Task, "id" | "_id" | "createdAt" | "updatedAt">) => {
+    if (!session?.user?.email) return
+    
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: taskData.title,
+          description: taskData.description,
+          dueDate: taskData.endDate.toISOString(),
+          priority: taskData.priority || 'medium',
+          attachments: taskData.files,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create task')
+      }
+
+      const newTask = await response.json()
+      
+      // Add the new task to local state
+      const formattedTask = {
+        ...newTask,
+        id: newTask._id,
+        startDate: new Date(taskData.startDate),
+        endDate: new Date(taskData.endDate),
+        createdAt: new Date(newTask.createdAt),
+        updatedAt: new Date(newTask.updatedAt),
+        files: taskData.files,
+        completed: false,
+      }
+      
+      setTasks((prev) => [...prev, formattedTask])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create task')
+      console.error('Error creating task:', err)
+    } finally {
+      setIsLoading(false)
     }
-    setTasks((prev) => [...prev, newTask])
   }
 
-  const updateTask = (id: string, taskData: Partial<Task>) => {
-    setTasks((prev) => prev.map((task) => (task.id === id ? { ...task, ...taskData, updatedAt: new Date() } : task)))
+  const updateTask = async (id: string, taskData: Partial<Task>) => {
+    if (!session?.user?.email) return
+    
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await fetch(`/api/tasks/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(taskData),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update task')
+      }
+
+      const updatedTask = await response.json()
+      
+      // Update local state
+      setTasks((prev) => prev.map((task) => 
+        task.id === id ? { ...task, ...taskData, updatedAt: new Date() } : task
+      ))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update task')
+      console.error('Error updating task:', err)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const deleteTask = (id: string) => {
-    setTasks((prev) => prev.filter((task) => task.id !== id))
+  const deleteTask = async (id: string) => {
+    if (!session?.user?.email) return
+    
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await fetch(`/api/tasks/${id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete task')
+      }
+
+      // Remove from local state
+      setTasks((prev) => prev.filter((task) => task.id !== id))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete task')
+      console.error('Error deleting task:', err)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const addFileToTask = (taskId: string, file: TaskFile) => {
+  const addFileToTask = async (taskId: string, file: TaskFile) => {
+    // For now, just update local state
+    // TODO: Implement file upload API
     setTasks((prev) =>
       prev.map((task) =>
         task.id === taskId ? { ...task, files: [...task.files, file], updatedAt: new Date() } : task,
@@ -78,7 +198,9 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     )
   }
 
-  const removeFileFromTask = (taskId: string, fileId: string) => {
+  const removeFileFromTask = async (taskId: string, fileId: string) => {
+    // For now, just update local state
+    // TODO: Implement file removal API
     setTasks((prev) =>
       prev.map((task) =>
         task.id === taskId
@@ -88,10 +210,11 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     )
   }
 
-  const toggleTaskCompletion = (id: string) => {
-    setTasks((prev) =>
-      prev.map((task) => (task.id === id ? { ...task, completed: !task.completed, updatedAt: new Date() } : task)),
-    )
+  const toggleTaskCompletion = async (id: string) => {
+    const task = tasks.find(t => t.id === id)
+    if (!task) return
+    
+    await updateTask(id, { completed: !task.completed })
   }
 
   return (
@@ -104,6 +227,9 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         addFileToTask,
         removeFileFromTask,
         toggleTaskCompletion,
+        isLoading,
+        error,
+        refetchTasks: fetchTasks,
       }}
     >
       {children}

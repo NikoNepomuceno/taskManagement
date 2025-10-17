@@ -7,6 +7,7 @@ import { useTasks } from "@/contexts/task-context"
 import { getTaskStatus } from "@/lib/types"
 import { useState } from "react"
 import { format, isSameDay } from "date-fns"
+import Link from "next/link"
 
 export default function CalendarPage() {
     const [date, setDate] = useState<Date | undefined>(new Date())
@@ -75,7 +76,7 @@ export default function CalendarPage() {
                                     }
                                     
                                     return (
-                                        <div key={task.id} className="p-3 border rounded-lg">
+                                        <Link href={`/tasks/${task.id}`} key={task.id} className="block p-3 border rounded-lg hover:bg-muted/50">
                                             <div className="flex items-start justify-between mb-2">
                                                 <h4 className="font-medium text-sm">{task.title}</h4>
                                                 <Badge className={`text-xs ${statusColors[status]}`}>
@@ -94,7 +95,7 @@ export default function CalendarPage() {
                                                     </div>
                                                 )}
                                             </div>
-                                        </div>
+                                        </Link>
                                     )
                                 })}
                             </div>
