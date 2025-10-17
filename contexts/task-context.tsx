@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { useSession } from "next-auth/react"
 import type { Task, TaskFile } from "@/lib/types"
+import { notifyError, notifySuccess } from "@/lib/alerts"
 
 interface TaskContextType {
   tasks: Task[]
@@ -124,9 +125,11 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       }
       
       setTasks((prev) => [...prev, formattedTask])
+      notifySuccess('Task created')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create task')
       console.error('Error creating task:', err)
+      notifyError('Failed to create task')
     } finally {
       setIsLoading(false)
     }
@@ -156,9 +159,11 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       setTasks((prev) => prev.map((task) => 
         task.id === id ? { ...task, ...taskData, updatedAt: new Date() } : task
       ))
+      notifySuccess('Task updated')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update task')
       console.error('Error updating task:', err)
+      notifyError('Failed to update task')
     } finally {
       setIsLoading(false)
     }
@@ -180,9 +185,11 @@ export function TaskProvider({ children }: { children: ReactNode }) {
 
       // Remove from local state
       setTasks((prev) => prev.filter((task) => task.id !== id))
+      notifySuccess('Task deleted')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete task')
       console.error('Error deleting task:', err)
+      notifyError('Failed to delete task')
     } finally {
       setIsLoading(false)
     }

@@ -147,9 +147,9 @@ export function TaskFormModal({ editTask, open: controlledOpen, onOpenChange, tr
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{editTask ? "Edit Task" : "Create New Task"}</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">{editTask ? "Edit Task" : "Create New Task"}</DialogTitle>
           <DialogDescription>
             {editTask ? "Update task details and attachments" : "Add a task with deadlines and attach files"}
           </DialogDescription>
@@ -266,7 +266,7 @@ export function TaskFormModal({ editTask, open: controlledOpen, onOpenChange, tr
             </div>
           )}
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)} className="flex-1">
               Cancel
             </Button>

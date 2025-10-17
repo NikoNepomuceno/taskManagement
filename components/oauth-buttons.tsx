@@ -11,6 +11,7 @@ export function OAuthButtons({ onGoogle }: { onGoogle?: () => void }) {
       <Button
         variant="outline"
         type="button"
+        className="w-full"
         onClick={onGoogle ?? (() => signIn('google', { callbackUrl: '/' }))}
       >
         <Image

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
 import { signOut } from "next-auth/react"
+import { notifyError, notifySuccess } from "@/lib/alerts"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,14 +34,15 @@ export function Sidebar() {
   const handleLogout = async () => {
     setIsLoggingOut(true)
     try {
-      await signOut({ 
-        callbackUrl: '/auth/login',
-        redirect: true 
-      })
+      const res = await signOut({ callbackUrl: '/auth/login', redirect: false })
+      notifySuccess('Logged out')
+      // NextAuth with redirect: false returns undefined in recent versions; fallback to manual redirect
+      window.location.href = '/auth/login'
     } catch (error) {
       console.error('Logout error:', error)
       // Fallback to manual logout
       localStorage.clear()
+      notifyError('Logout failed, clearing session')
       window.location.href = '/auth/login'
     }
   }

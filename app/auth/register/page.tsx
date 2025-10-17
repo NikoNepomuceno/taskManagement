@@ -70,102 +70,106 @@ export default function RegisterPage() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Register</CardTitle>
-        <CardDescription>Create your account</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {step === 'form' && (
-          <div className="grid gap-6">
-            <OAuthButtons />
-            <div className="text-center text-xs text-muted-foreground">or continue with email</div>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input placeholder="name@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="username"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Username</FormLabel>
-                      <FormControl>
-                        <Input placeholder="your username" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <PasswordInput placeholder="••••••••" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Confirm password</FormLabel>
-                      <FormControl>
-                        <PasswordInput placeholder="••••••••" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" disabled={submitting}>Continue</Button>
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl">Register</CardTitle>
+            <CardDescription>Create your account</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {step === 'form' && (
+              <div className="grid gap-6">
+                <OAuthButtons />
+                <div className="text-center text-xs text-muted-foreground">or continue with email</div>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input placeholder="name@example.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="username"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Username</FormLabel>
+                          <FormControl>
+                            <Input placeholder="your username" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <PasswordInput placeholder="••••••••" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Confirm password</FormLabel>
+                          <FormControl>
+                            <PasswordInput placeholder="••••••••" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button type="submit" disabled={submitting} className="w-full">Continue</Button>
+                  </form>
+                </Form>
+              </div>
+            )}
+
+            {step === 'otp' && (
+              <form onSubmit={handleVerify} className="grid gap-4">
+                <div className="text-sm text-muted-foreground text-center">Enter the 6-digit code sent to {email}</div>
+                <Input name="otp" inputMode="numeric" maxLength={6} placeholder="123456" className="text-center text-lg tracking-widest" />
+                {otpError && <div className="text-destructive text-sm text-center">{otpError}</div>}
+                <Button type="submit" disabled={submitting} className="w-full">Verify</Button>
+                <Button type="button" variant="ghost" onClick={() => setStep('form')} className="w-full">Change email</Button>
               </form>
-            </Form>
-          </div>
-        )}
+            )}
 
-        {step === 'otp' && (
-          <form onSubmit={handleVerify} className="grid gap-4">
-            <div className="text-sm text-muted-foreground">Enter the 6-digit code sent to {email}</div>
-            <Input name="otp" inputMode="numeric" maxLength={6} placeholder="123456" />
-            {otpError && <div className="text-destructive text-sm">{otpError}</div>}
-            <Button type="submit" disabled={submitting}>Verify</Button>
-            <Button type="button" variant="ghost" onClick={() => setStep('form')}>Change email</Button>
-          </form>
-        )}
-
-        {step === 'done' && (
-          <div className="grid gap-3 text-center">
-            <div className="text-sm">Email verified. Account created.</div>
-            <Button asChild>
-              <Link href="/auth/login">Go to Login</Link>
-            </Button>
-          </div>
-        )}
-      </CardContent>
-      <CardFooter className="justify-center">
-        <div className="text-sm text-muted-foreground">
-          Already have an account?{' '}
-          <Link className="text-primary" href="/auth/login">Sign in</Link>
-        </div>
-      </CardFooter>
-    </Card>
+            {step === 'done' && (
+              <div className="grid gap-3 text-center">
+                <div className="text-sm">Email verified. Account created.</div>
+                <Button asChild className="w-full">
+                  <Link href="/auth/login">Go to Login</Link>
+                </Button>
+              </div>
+            )}
+          </CardContent>
+          <CardFooter className="justify-center">
+            <div className="text-sm text-muted-foreground text-center">
+              Already have an account?{' '}
+              <Link className="text-primary hover:underline" href="/auth/login">Sign in</Link>
+            </div>
+          </CardFooter>
+        </Card>
+      </div>
+    </div>
   )
 }
 

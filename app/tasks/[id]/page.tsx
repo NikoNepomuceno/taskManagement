@@ -23,7 +23,7 @@ export default function TaskPage({ params }: TaskPageProps) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
         <div className="lg:pl-64">
-          <div className="container mx-auto px-4 py-8 max-w-4xl">
+          <div className="container mx-auto px-4 py-4 sm:py-6 lg:py-8 max-w-4xl">
             <Link href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:underline">
               <ArrowLeft className="h-4 w-4" /> Back to tasks
             </Link>
@@ -59,32 +59,32 @@ export default function TaskPage({ params }: TaskPageProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       <div className="lg:pl-64">
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="container mx-auto px-4 py-4 sm:py-6 lg:py-8 max-w-4xl">
           <Link href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:underline">
             <ArrowLeft className="h-4 w-4" /> Back to tasks
           </Link>
 
           <Card className="mt-4">
             <CardHeader>
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <CardTitle className="text-3xl">{task.title}</CardTitle>
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <CardTitle className="text-2xl sm:text-3xl break-words">{task.title}</CardTitle>
                   {task.description && (
-                    <CardDescription className="text-base mt-2">{task.description}</CardDescription>
+                    <CardDescription className="text-base mt-2 break-words">{task.description}</CardDescription>
                   )}
                 </div>
-                <Badge className={statusToClass[status]}>{statusToLabel[status]}</Badge>
+                <Badge className={`${statusToClass[status]} flex-shrink-0`}>{statusToLabel[status]}</Badge>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-wrap gap-6 text-sm">
+              <div className="flex flex-col sm:flex-row sm:flex-wrap gap-4 sm:gap-6 text-sm">
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                   <span className="text-muted-foreground">Start:</span>
                   <span className="font-medium">{format(new Date(task.startDate), "MMM dd, yyyy")}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                   <span className="text-muted-foreground">Due:</span>
                   <span className="font-medium">{format(new Date(task.endDate), "MMM dd, yyyy")}</span>
                 </div>
@@ -98,7 +98,7 @@ export default function TaskPage({ params }: TaskPageProps) {
                   </div>
                   <div className="grid gap-2">
                     {task.files.map((file) => (
-                      <div key={file.id} className="flex items-center justify-between rounded-lg border bg-muted/50 p-3">
+                      <div key={file.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-lg border bg-muted/50 p-3">
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{file.name}</p>
                           <p className="text-xs text-muted-foreground">
@@ -109,6 +109,7 @@ export default function TaskPage({ params }: TaskPageProps) {
                           <Button
                             variant="outline"
                             size="sm"
+                            className="w-full sm:w-auto"
                             onClick={() => {
                               const link = document.createElement("a")
                               link.href = file.data
