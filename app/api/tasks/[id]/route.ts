@@ -29,7 +29,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const { id } = await params
 
     const task = await Task.findOneAndUpdate(
-      { _id: id, userId: user._id },
+      { _id: id, userId: user._id, isDeleted: { $ne: true } },
       {
         ...(title && { title }),
         ...(description !== undefined && { description }),
@@ -74,13 +74,20 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     }
 
     const { id } = await params
-    const task = await Task.findOneAndDelete({ _id: id, userId: user._id })
+    const task = await Task.findOneAndUpdate(
+      { _id: id, userId: user._id, isDeleted: { $ne: true } },
+      { 
+        isDeleted: true,
+        deletedAt: new Date()
+      },
+      { new: true }
+    )
 
     if (!task) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ message: 'Task deleted successfully' })
+    return NextResponse.json({ message: 'Task moved to trash successfully' })
   } catch (error) {
     console.error('Error deleting task:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

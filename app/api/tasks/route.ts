@@ -24,7 +24,7 @@ export async function GET() {
       })
     }
 
-    const tasks = await Task.find({ userId: user._id }).sort({ createdAt: -1 })
+    const tasks = await Task.find({ userId: user._id, isDeleted: { $ne: true } }).sort({ createdAt: -1 })
     return NextResponse.json(tasks)
   } catch (error) {
     console.error('Error fetching tasks:', error)

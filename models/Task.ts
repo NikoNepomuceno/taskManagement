@@ -18,6 +18,8 @@ export interface ITask extends Document {
   color?: string
   attachments: IFileAttachment[]
   userId: mongoose.Types.ObjectId
+  isDeleted: boolean
+  deletedAt?: Date
   createdAt: Date
   updatedAt: Date
 }
@@ -67,6 +69,13 @@ const TaskSchema = new Schema<ITask>({
     ref: 'User',
     required: true,
   },
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  },
+  deletedAt: {
+    type: Date,
+  },
 }, {
   timestamps: true,
 })
@@ -74,5 +83,7 @@ const TaskSchema = new Schema<ITask>({
 // Index for efficient queries
 TaskSchema.index({ userId: 1, completed: 1 })
 TaskSchema.index({ userId: 1, dueDate: 1 })
+TaskSchema.index({ userId: 1, isDeleted: 1 })
+TaskSchema.index({ deletedAt: 1 })
 
 export default mongoose.models.Task || mongoose.model<ITask>('Task', TaskSchema)

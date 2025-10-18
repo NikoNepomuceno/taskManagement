@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, CheckCircle2, Calendar,LogOut, Menu, X, Icon } from "lucide-react"
+import { Home, CheckCircle2, Calendar, Settings, LogOut, Menu, X, Icon } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -22,7 +22,8 @@ import {
 const navItems = [
   { href: "/", label: "Home", icon: Home },
   { href: "/completed", label: "Completed Tasks", icon: CheckCircle2 },
-  { href: "/calendar", label: "Calendar", icon: Calendar }
+  { href: "/calendar", label: "Calendar", icon: Calendar },
+  { href: "/settings", label: "Settings", icon: Settings }
 ]
 
 export function Sidebar() {

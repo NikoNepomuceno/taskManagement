@@ -7,6 +7,7 @@ import { TaskProvider } from "@/contexts/task-context"
 import { LoadingProvider } from "@/contexts/loading-context"
 import { AppChrome } from "@/components/app-chrome"
 import { SessionProvider } from "@/components/session-provider"
+import { ThemeProvider } from "@/components/theme-provider"
 
 const inter = Inter({
   variable: "--font-inter",
@@ -33,11 +34,19 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="antialiased">
         <SessionProvider>
-          <TaskProvider>
-            <LoadingProvider>
-              <AppChrome>{children}</AppChrome>
-            </LoadingProvider>
-          </TaskProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+            storageKey="task-management-theme"
+          >
+            <TaskProvider>
+              <LoadingProvider>
+                <AppChrome>{children}</AppChrome>
+              </LoadingProvider>
+            </TaskProvider>
+          </ThemeProvider>
         </SessionProvider>
       </body>
     </html>

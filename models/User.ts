@@ -5,6 +5,7 @@ export interface IUser extends Document {
   email: string
   image?: string
   emailVerified?: Date
+  theme?: 'light' | 'dark' | 'system'
   createdAt: Date
   updatedAt: Date
 }
@@ -24,6 +25,11 @@ const UserSchema = new Schema<IUser>({
   },
   emailVerified: {
     type: Date,
+  },
+  theme: {
+    type: String,
+    enum: ['light', 'dark', 'system'],
+    default: 'system',
   },
 }, {
   timestamps: true,
