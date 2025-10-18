@@ -52,13 +52,16 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { title, description, dueDate, priority = 'medium' } = body
+    const { title, description, dueDate, startDate, endDate, priority = 'medium', color = '#3b82f6' } = body
 
     const task = new Task({
       title,
       description,
       dueDate: dueDate ? new Date(dueDate) : undefined,
+      startDate: startDate ? new Date(startDate) : undefined,
+      endDate: endDate ? new Date(endDate) : undefined,
       priority,
+      color,
       userId: user._id,
     })
 

@@ -25,7 +25,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     }
 
     const body = await request.json()
-    const { title, description, dueDate, priority, completed } = body
+    const { title, description, dueDate, startDate, endDate, priority, completed, color } = body
     const { id } = await params
 
     const task = await Task.findOneAndUpdate(
@@ -34,7 +34,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         ...(title && { title }),
         ...(description !== undefined && { description }),
         ...(dueDate && { dueDate: new Date(dueDate) }),
+        ...(startDate && { startDate: new Date(startDate) }),
+        ...(endDate && { endDate: new Date(endDate) }),
         ...(priority && { priority }),
+        ...(color && { color }),
         ...(completed !== undefined && { completed }),
       },
       { new: true }

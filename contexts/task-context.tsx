@@ -58,12 +58,13 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       const formattedTasks = data.map((task: any) => ({
         ...task,
         id: task._id, // Use _id as id for compatibility
-        startDate: new Date(task.startDate || task.dueDate),
-        endDate: new Date(task.endDate || task.dueDate),
+        startDate: task.startDate ? new Date(task.startDate) : (task.dueDate ? new Date(task.dueDate) : new Date()),
+        endDate: task.endDate ? new Date(task.endDate) : (task.dueDate ? new Date(task.dueDate) : new Date()),
         createdAt: new Date(task.createdAt),
         updatedAt: new Date(task.updatedAt),
         files: task.attachments || [],
         completed: task.completed || false,
+        color: task.color || '#3b82f6',
       }))
       
       setTasks(formattedTasks)
@@ -100,8 +101,10 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({
           title: taskData.title,
           description: taskData.description,
-          dueDate: taskData.endDate.toISOString(),
+          startDate: taskData.startDate.toISOString(),
+          endDate: taskData.endDate.toISOString(),
           priority: taskData.priority || 'medium',
+          color: taskData.color || '#3b82f6',
           attachments: taskData.files,
         }),
       })

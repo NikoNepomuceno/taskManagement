@@ -14,6 +14,7 @@ import { FileViewerDialog } from "./file-viewer-dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { TaskFormModal } from "./task-form-modal"
 import { DeleteConfirmationDialog } from "./delete-confirmation-dialog"
+import { CompletionConfirmationDialog } from "./completion-confirmation-dialog"
 import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
 
@@ -32,6 +33,8 @@ export function TaskList({ showCompleted = false }: TaskListProps) {
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null)
+  const [completionDialogOpen, setCompletionDialogOpen] = useState(false)
+  const [taskToComplete, setTaskToComplete] = useState<Task | null>(null)
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -120,6 +123,19 @@ export function TaskList({ showCompleted = false }: TaskListProps) {
       setTaskToDelete(null)
     }
     setDeleteDialogOpen(false)
+  }
+
+  const handleCompletionClick = (task: Task) => {
+    setTaskToComplete(task)
+    setCompletionDialogOpen(true)
+  }
+
+  const handleConfirmCompletion = async () => {
+    if (taskToComplete) {
+      await toggleTaskCompletion(taskToComplete.id)
+      setTaskToComplete(null)
+    }
+    setCompletionDialogOpen(false)
   }
 
   if (isLoading) {
@@ -230,57 +246,57 @@ export function TaskList({ showCompleted = false }: TaskListProps) {
               return (
                 <Card key={task.id} className="hover:shadow-md transition-shadow">
                   <CardHeader>
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2 sm:gap-4">
+                      <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
                         <Checkbox
                           checked={task.completed}
-                          onCheckedChange={() => toggleTaskCompletion(task.id)}
-                          className="mt-1"
+                          onCheckedChange={() => !task.completed ? handleCompletionClick(task) : toggleTaskCompletion(task.id)}
+                          className="mt-1 flex-shrink-0"
                         />
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-2">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
                             <CardTitle
-                              className={cn("text-xl", task.completed && "line-through text-muted-foreground")}
+                              className={cn("text-lg sm:text-xl break-words", task.completed && "line-through text-muted-foreground")}
                             >
                               <Link href={`/tasks/${task.id}`} className="hover:underline">
                                 {task.title}
                               </Link>
                             </CardTitle>
                             {!showCompleted && (
-                              <Badge className={getStatusColor(status)}>{getStatusLabel(status)}</Badge>
+                              <Badge className={cn(getStatusColor(status), "text-xs flex-shrink-0 w-fit")}>{getStatusLabel(status)}</Badge>
                             )}
                           </div>
                           {task.description && (
-                            <CardDescription className={cn("text-base", task.completed && "line-through")}>
+                            <CardDescription className={cn("text-sm sm:text-base break-words", task.completed && "line-through")}>
                               {task.description}
                             </CardDescription>
                           )}
                         </div>
                       </div>
-                      <div className="flex gap-2 shrink-0">
+                      <div className="flex gap-1 sm:gap-2 shrink-0">
                         {!showCompleted && (
-                          <Button variant="ghost" size="icon" onClick={() => handleEditTask(task)}>
-                            <Edit className="h-4 w-4" />
+                          <Button variant="ghost" size="icon" onClick={() => handleEditTask(task)} className="h-8 w-8 sm:h-10 sm:w-10">
+                            <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
                           </Button>
                         )}
-                        <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(task)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(task)} className="h-8 w-8 sm:h-10 sm:w-10">
+                          <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 text-destructive" />
                         </Button>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      <div className="flex flex-wrap gap-4 text-sm">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-muted-foreground">Start:</span>
-                          <span className="font-medium">{format(new Date(task.startDate), "MMM dd, yyyy")}</span>
+                      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                          <span className="text-muted-foreground flex-shrink-0">Start:</span>
+                          <span className="font-medium truncate">{format(new Date(task.startDate), "MMM dd, yyyy")}</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-muted-foreground">Due:</span>
-                          <span className="font-medium">{format(new Date(task.endDate), "MMM dd, yyyy")}</span>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                          <span className="text-muted-foreground flex-shrink-0">Due:</span>
+                          <span className="font-medium truncate">{format(new Date(task.endDate), "MMM dd, yyyy")}</span>
                         </div>
                       </div>
 
@@ -359,6 +375,12 @@ export function TaskList({ showCompleted = false }: TaskListProps) {
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleConfirmDelete}
         taskTitle={taskToDelete?.title || ""}
+      />
+      <CompletionConfirmationDialog
+        open={completionDialogOpen}
+        onOpenChange={setCompletionDialogOpen}
+        onConfirm={handleConfirmCompletion}
+        task={taskToComplete}
       />
     </>
   )

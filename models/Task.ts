@@ -12,7 +12,10 @@ export interface ITask extends Document {
   description?: string
   completed: boolean
   dueDate?: Date
+  startDate?: Date
+  endDate?: Date
   priority: 'low' | 'medium' | 'high'
+  color?: string
   attachments: IFileAttachment[]
   userId: mongoose.Types.ObjectId
   createdAt: Date
@@ -43,10 +46,20 @@ const TaskSchema = new Schema<ITask>({
   dueDate: {
     type: Date,
   },
+  startDate: {
+    type: Date,
+  },
+  endDate: {
+    type: Date,
+  },
   priority: {
     type: String,
     enum: ['low', 'medium', 'high'],
     default: 'medium',
+  },
+  color: {
+    type: String,
+    default: '#3b82f6',
   },
   attachments: [FileAttachmentSchema],
   userId: {

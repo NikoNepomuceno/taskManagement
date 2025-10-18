@@ -108,7 +108,7 @@ export function Calendar({ selectedDate, onDateSelect, className, tasks = [] }: 
         isEnd,
         isMiddle,
         colorClass: undefined,
-        colorHex: (task as any).color as string | undefined,
+        colorHex: task.color || '#3b82f6',
         // fallback tailwind color classes if no custom color present
         fallbackClass: task.completed ? 'bg-green-500' : 
                isStart ? 'bg-blue-500' : 
