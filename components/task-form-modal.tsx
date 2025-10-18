@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
@@ -32,6 +33,7 @@ export function TaskFormModal({ editTask, open: controlledOpen, onOpenChange, tr
   const [description, setDescription] = useState("")
   const [startDate, setStartDate] = useState("")
   const [endDate, setEndDate] = useState("")
+  const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium')
   const [files, setFiles] = useState<TaskFile[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [color, setColor] = useState<string>("#3b82f6")
@@ -45,6 +47,7 @@ export function TaskFormModal({ editTask, open: controlledOpen, onOpenChange, tr
       setDescription(editTask.description)
       setStartDate(new Date(editTask.startDate).toISOString().split("T")[0])
       setEndDate(new Date(editTask.endDate).toISOString().split("T")[0])
+      setPriority(editTask.priority || 'medium')
       setFiles(editTask.files)
       setColor(editTask.color ?? "#3b82f6")
     } else if (!open) {
@@ -53,6 +56,7 @@ export function TaskFormModal({ editTask, open: controlledOpen, onOpenChange, tr
       setDescription("")
       setStartDate("")
       setEndDate("")
+      setPriority('medium')
       setFiles([])
       setColor("#3b82f6")
     }
@@ -104,6 +108,7 @@ export function TaskFormModal({ editTask, open: controlledOpen, onOpenChange, tr
         description,
         startDate: new Date(startDate),
         endDate: new Date(endDate),
+        priority,
         files,
         color,
       })
@@ -113,6 +118,7 @@ export function TaskFormModal({ editTask, open: controlledOpen, onOpenChange, tr
         description,
         startDate: new Date(startDate),
         endDate: new Date(endDate),
+        priority,
         files,
         completed: false,
         color,
@@ -124,6 +130,7 @@ export function TaskFormModal({ editTask, open: controlledOpen, onOpenChange, tr
     setDescription("")
     setStartDate("")
     setEndDate("")
+    setPriority('medium')
     setFiles([])
     setColor("#3b82f6")
     setIsSubmitting(false)
@@ -193,6 +200,20 @@ export function TaskFormModal({ editTask, open: controlledOpen, onOpenChange, tr
               <Label htmlFor="endDate">End Date / Deadline</Label>
               <Input id="endDate" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="priority">Priority</Label>
+            <Select value={priority} onValueChange={(value: 'low' | 'medium' | 'high') => setPriority(value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="high">🔴 High Priority</SelectItem>
+                <SelectItem value="medium">🟡 Medium Priority</SelectItem>
+                <SelectItem value="low">🟢 Low Priority</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Color selection */}

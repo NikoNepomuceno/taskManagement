@@ -12,7 +12,7 @@ import { PasswordInput } from '@/components/password-input'
 import { OAuthButtons } from '@/components/oauth-buttons'
 import { login } from '@/lib/auth-mock'
 import Link from 'next/link'
-import { notifyError, notifySuccess } from '@/lib/alerts'
+import { notifyError, notifySuccess, notifyLoading, notifyLoadingSuccess, notifyLoadingError } from '@/lib/alerts'
 
 const loginSchema = z.object({
   identifier: z.string().min(1),
@@ -33,14 +33,18 @@ export default function LoginPage() {
   const onSubmit = async (values: LoginValues) => {
     setSubmitting(true)
     setError(null)
+    
+    // Show loading notification
+    notifyLoading('Signing you in...', 'Logging In')
+    
     try {
       const res = await login(values.identifier, values.password)
       if (!res.ok) {
         setError(res.error || 'Login failed')
-        notifyError(res.error || 'Login failed')
+        notifyLoadingError(res.error || 'Login failed')
         return
       }
-      notifySuccess('Logged in successfully')
+      notifyLoadingSuccess('Welcome back! You\'re now logged in.')
     } finally {
       setSubmitting(false)
     }

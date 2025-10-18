@@ -70,6 +70,32 @@ export function TaskList({ showCompleted = false }: TaskListProps) {
     }
   }
 
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return "bg-red-500 text-white hover:bg-red-600"
+      case "medium":
+        return "bg-yellow-500 text-white hover:bg-yellow-600"
+      case "low":
+        return "bg-green-500 text-white hover:bg-green-600"
+      default:
+        return "bg-gray-500 text-white hover:bg-gray-600"
+    }
+  }
+
+  const getPriorityLabel = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return "🔴 High"
+      case "medium":
+        return "🟡 Medium"
+      case "low":
+        return "🟢 Low"
+      default:
+        return "Medium"
+    }
+  }
+
   const filteredAndSortedTasks = useMemo(() => {
     let filtered = tasks.filter((task) => task.completed === showCompleted)
 
@@ -86,7 +112,13 @@ export function TaskList({ showCompleted = false }: TaskListProps) {
       filtered = filtered.filter((task) => getTaskStatus(task) === statusFilter)
     }
 
-    // Sort by urgency
+    // Sort by priority first, then by urgency
+    const priorityOrder: Record<string, number> = {
+      high: 0,
+      medium: 1,
+      low: 2,
+    }
+
     const statusOrder: Record<TaskStatus, number> = {
       overdue: 0,
       urgent: 1,
@@ -96,6 +128,15 @@ export function TaskList({ showCompleted = false }: TaskListProps) {
     }
 
     return filtered.sort((a, b) => {
+      // First sort by priority
+      const priorityA = priorityOrder[a.priority || 'medium']
+      const priorityB = priorityOrder[b.priority || 'medium']
+      
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB
+      }
+      
+      // Then sort by status/urgency
       const statusA = getTaskStatus(a)
       const statusB = getTaskStatus(b)
       return statusOrder[statusA] - statusOrder[statusB]
@@ -262,9 +303,14 @@ export function TaskList({ showCompleted = false }: TaskListProps) {
                                 {task.title}
                               </Link>
                             </CardTitle>
-                            {!showCompleted && (
-                              <Badge className={cn(getStatusColor(status), "text-xs flex-shrink-0 w-fit")}>{getStatusLabel(status)}</Badge>
-                            )}
+                            <div className="flex gap-2 flex-wrap">
+                              <Badge className={cn(getPriorityColor(task.priority || 'medium'), "text-xs flex-shrink-0 w-fit")}>
+                                {getPriorityLabel(task.priority || 'medium')}
+                              </Badge>
+                              {!showCompleted && (
+                                <Badge className={cn(getStatusColor(status), "text-xs flex-shrink-0 w-fit")}>{getStatusLabel(status)}</Badge>
+                              )}
+                            </div>
                           </div>
                           {task.description && (
                             <CardDescription className={cn("text-sm sm:text-base break-words", task.completed && "line-through")}>

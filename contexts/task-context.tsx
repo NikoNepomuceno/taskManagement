@@ -3,7 +3,8 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { useSession } from "next-auth/react"
 import type { Task, TaskFile } from "@/lib/types"
-import { notifyError, notifySuccess } from "@/lib/alerts"
+import { notifyError, notifySuccess, notifyLoading, notifyLoadingSuccess, notifyLoadingError } from "@/lib/alerts"
+import { showLoginNotification } from "@/lib/notifications"
 
 interface TaskContextType {
   tasks: Task[]
@@ -68,6 +69,11 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       }))
       
       setTasks(formattedTasks)
+      
+      // Check for critical tasks and show notification
+      if (formattedTasks.length > 0) {
+        showLoginNotification(formattedTasks)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch tasks')
       console.error('Error fetching tasks:', err)
@@ -92,6 +98,10 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     
     setIsLoading(true)
     setError(null)
+    
+    // Show loading notification
+    notifyLoading('Creating task...', 'Creating Task')
+    
     try {
       const response = await fetch('/api/tasks', {
         method: 'POST',
@@ -128,11 +138,11 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       }
       
       setTasks((prev) => [...prev, formattedTask])
-      notifySuccess('Task created')
+      notifyLoadingSuccess('Task created successfully!')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create task')
       console.error('Error creating task:', err)
-      notifyError('Failed to create task')
+      notifyLoadingError('Failed to create task')
     } finally {
       setIsLoading(false)
     }
@@ -143,6 +153,10 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     
     setIsLoading(true)
     setError(null)
+    
+    // Show loading notification
+    notifyLoading('Updating task...', 'Updating Task')
+    
     try {
       const response = await fetch(`/api/tasks/${id}`, {
         method: 'PATCH',
@@ -162,11 +176,11 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       setTasks((prev) => prev.map((task) => 
         task.id === id ? { ...task, ...taskData, updatedAt: new Date() } : task
       ))
-      notifySuccess('Task updated')
+      notifyLoadingSuccess('Task updated successfully!')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update task')
       console.error('Error updating task:', err)
-      notifyError('Failed to update task')
+      notifyLoadingError('Failed to update task')
     } finally {
       setIsLoading(false)
     }
@@ -177,6 +191,10 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     
     setIsLoading(true)
     setError(null)
+    
+    // Show loading notification
+    notifyLoading('Deleting task...', 'Deleting Task')
+    
     try {
       const response = await fetch(`/api/tasks/${id}`, {
         method: 'DELETE',
@@ -188,11 +206,11 @@ export function TaskProvider({ children }: { children: ReactNode }) {
 
       // Remove from local state
       setTasks((prev) => prev.filter((task) => task.id !== id))
-      notifySuccess('Task deleted')
+      notifyLoadingSuccess('Task deleted successfully!')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete task')
       console.error('Error deleting task:', err)
-      notifyError('Failed to delete task')
+      notifyLoadingError('Failed to delete task')
     } finally {
       setIsLoading(false)
     }

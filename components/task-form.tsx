@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useTasks } from "@/contexts/task-context"
 import { Upload, X } from "lucide-react"
 import type { TaskFile } from "@/lib/types"
@@ -18,6 +19,7 @@ export function TaskForm() {
   const [description, setDescription] = useState("")
   const [startDate, setStartDate] = useState("")
   const [endDate, setEndDate] = useState("")
+  const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium')
   const [files, setFiles] = useState<TaskFile[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -67,6 +69,7 @@ export function TaskForm() {
         description,
         startDate: new Date(startDate),
         endDate: new Date(endDate),
+        priority,
         files,
       })
 
@@ -75,6 +78,7 @@ export function TaskForm() {
       setDescription("")
       setStartDate("")
       setEndDate("")
+      setPriority('medium')
       setFiles([])
     } catch (err) {
       console.error('Error creating task:', err)
@@ -135,6 +139,20 @@ export function TaskForm() {
               <Label htmlFor="endDate">End Date / Deadline</Label>
               <Input id="endDate" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="priority">Priority</Label>
+            <Select value={priority} onValueChange={(value: 'low' | 'medium' | 'high') => setPriority(value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="high">🔴 High Priority</SelectItem>
+                <SelectItem value="medium">🟡 Medium Priority</SelectItem>
+                <SelectItem value="low">🟢 Low Priority</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">

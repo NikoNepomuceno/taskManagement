@@ -4,6 +4,7 @@ import { Inter, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 import "sweetalert2/dist/sweetalert2.min.css"
 import { TaskProvider } from "@/contexts/task-context"
+import { LoadingProvider } from "@/contexts/loading-context"
 import { AppChrome } from "@/components/app-chrome"
 import { SessionProvider } from "@/components/session-provider"
 
@@ -33,7 +34,9 @@ export default function RootLayout({
       <body className="antialiased">
         <SessionProvider>
           <TaskProvider>
-            <AppChrome>{children}</AppChrome>
+            <LoadingProvider>
+              <AppChrome>{children}</AppChrome>
+            </LoadingProvider>
           </TaskProvider>
         </SessionProvider>
       </body>
