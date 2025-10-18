@@ -14,6 +14,7 @@ interface TaskContextType {
   addFileToTask: (taskId: string, file: TaskFile) => Promise<void>
   removeFileFromTask: (taskId: string, fileId: string) => Promise<void>
   toggleTaskCompletion: (id: string) => Promise<void>
+  reorderTasks: (activeId: string, overId: string) => void
   isLoading: boolean
   error: string | null
   refetchTasks: () => Promise<void>
@@ -245,6 +246,21 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     await updateTask(id, { completed: !task.completed })
   }
 
+  const reorderTasks = (activeId: string, overId: string) => {
+    setTasks((items) => {
+      const oldIndex = items.findIndex((item) => item.id === activeId)
+      const newIndex = items.findIndex((item) => item.id === overId)
+      
+      if (oldIndex === -1 || newIndex === -1) return items
+      
+      const newItems = [...items]
+      const [removed] = newItems.splice(oldIndex, 1)
+      newItems.splice(newIndex, 0, removed)
+      
+      return newItems
+    })
+  }
+
   return (
     <TaskContext.Provider
       value={{
@@ -255,6 +271,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         addFileToTask,
         removeFileFromTask,
         toggleTaskCompletion,
+        reorderTasks,
         isLoading,
         error,
         refetchTasks: fetchTasks,
