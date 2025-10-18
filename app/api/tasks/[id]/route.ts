@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import authConfig from '@/auth.config.simple'
+import authConfig from '@/auth.config'
 import connectDB from '@/lib/mongodb'
 import Task from '@/models/Task'
 import User from '@/models/User'
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await connectDB()
     const session = await getServerSession(authConfig)
@@ -26,9 +26,10 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
     const body = await request.json()
     const { title, description, dueDate, priority, completed } = body
+    const { id } = await params
 
     const task = await Task.findOneAndUpdate(
-      { _id: params.id, userId: user._id },
+      { _id: id, userId: user._id },
       {
         ...(title && { title }),
         ...(description !== undefined && { description }),
@@ -50,7 +51,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await connectDB()
     const session = await getServerSession(authConfig)
@@ -69,7 +70,8 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       })
     }
 
-    const task = await Task.findOneAndDelete({ _id: params.id, userId: user._id })
+    const { id } = await params
+    const task = await Task.findOneAndDelete({ _id: id, userId: user._id })
 
     if (!task) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 })

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import authConfig from '@/auth.config.simple'
+import authConfig from '@/auth.config'
 import connectDB from '@/lib/mongodb'
 import Task from '@/models/Task'
 import User from '@/models/User'
