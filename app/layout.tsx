@@ -8,6 +8,7 @@ import { LoadingProvider } from "@/contexts/loading-context"
 import { AppChrome } from "@/components/app-chrome"
 import { SessionProvider } from "@/components/session-provider"
 import { ThemeProvider } from "@/components/theme-provider"
+import { SessionNotifications } from "@/components/session-notifications"
 
 const inter = Inter({
   variable: "--font-inter",
@@ -34,6 +35,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="antialiased">
         <SessionProvider>
+          <SessionNotifications />
           <ThemeProvider
             attribute="class"
             defaultTheme="system"

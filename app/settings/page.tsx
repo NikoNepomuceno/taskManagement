@@ -245,13 +245,13 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold flex items-center gap-2">
-          <Settings className="h-8 w-8" />
+    <div className="container mx-auto p-4 sm:p-6 max-w-4xl">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+          <Settings className="h-6 w-6 sm:h-8 sm:w-8" />
           Settings
         </h1>
-        <p className="text-muted-foreground mt-2">
+        <p className="text-muted-foreground mt-2 text-sm sm:text-base">
           Manage your account preferences and application settings
         </p>
       </div>
@@ -272,14 +272,14 @@ export default function SettingsPage() {
             <div className="space-y-4">
               <Label htmlFor="theme-select">Theme</Label>
               {!mounted ? (
-                <div className="w-full max-w-xs h-10 bg-muted animate-pulse rounded-md" />
+                <div className="w-full sm:max-w-xs h-10 bg-muted animate-pulse rounded-md" />
               ) : (
                 <Select
                   value={userTheme}
                   onValueChange={handleThemeChange}
                   disabled={isLoading}
                 >
-                  <SelectTrigger id="theme-select" className="w-full max-w-xs">
+                  <SelectTrigger id="theme-select" className="w-full sm:max-w-xs">
                     <SelectValue placeholder="Select theme" />
                   </SelectTrigger>
                   <SelectContent>
@@ -318,6 +318,7 @@ export default function SettingsPage() {
                   onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
                   required
                   disabled={isLoading}
+                  className="w-full"
                 />
               </div>
               <div className="space-y-2">
@@ -330,6 +331,7 @@ export default function SettingsPage() {
                   required
                   disabled={isLoading}
                   minLength={6}
+                  className="w-full"
                 />
               </div>
               <div className="space-y-2">
@@ -341,9 +343,10 @@ export default function SettingsPage() {
                   onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                   required
                   disabled={isLoading}
+                  className="w-full"
                 />
               </div>
-              <Button type="submit" disabled={isLoading}>
+              <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
                 {isLoading ? 'Updating...' : 'Update Password'}
               </Button>
             </form>
@@ -373,7 +376,7 @@ export default function SettingsPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 border rounded-lg">
                     <div className="space-y-1">
                       <p className="font-medium">Empty Trash ({trashTasks.length} items)</p>
                       <p className="text-sm text-muted-foreground">
@@ -384,6 +387,7 @@ export default function SettingsPage() {
                       variant="destructive"
                       onClick={() => setTrashDialogOpen(true)}
                       disabled={isLoading}
+                      className="w-full sm:w-auto"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
                       Empty Trash
@@ -396,7 +400,7 @@ export default function SettingsPage() {
                       const daysLeft = getDaysUntilPermanentDeletion(task.deletedAt)
                       return (
                         <div key={task._id} className="border rounded-lg p-4">
-                          <div className="flex items-start justify-between">
+                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                             <div className="flex-1">
                               <h5 className="font-medium">{task.title}</h5>
                               {task.description && (
@@ -404,7 +408,7 @@ export default function SettingsPage() {
                                   {task.description}
                                 </p>
                               )}
-                              <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2 text-xs text-muted-foreground">
                                 <div className="flex items-center gap-1">
                                   <Calendar className="h-3 w-3" />
                                   Created: {formatDate(task.createdAt)}
@@ -415,7 +419,7 @@ export default function SettingsPage() {
                                 </div>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2 ml-4">
+                            <div className="flex items-center gap-2 sm:ml-4">
                               <Badge className={getPriorityColor(task.priority)}>
                                 {task.priority}
                               </Badge>
@@ -427,7 +431,7 @@ export default function SettingsPage() {
                               )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 mt-3">
+                          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-3">
                             <Button
                               variant="outline"
                               size="sm"
@@ -435,6 +439,7 @@ export default function SettingsPage() {
                                 setSelectedTask(task)
                                 setRestoreDialogOpen(true)
                               }}
+                              className="w-full sm:w-auto"
                             >
                               <RotateCcw className="h-4 w-4 mr-2" />
                               Restore
@@ -446,6 +451,7 @@ export default function SettingsPage() {
                                 setSelectedTask(task)
                                 setDeleteDialogOpen(true)
                               }}
+                              className="w-full sm:w-auto"
                             >
                               <Trash2 className="h-4 w-4 mr-2" />
                               Delete Forever
@@ -471,18 +477,18 @@ export default function SettingsPage() {
 
       {/* Empty Trash Confirmation Dialog */}
       <AlertDialog open={trashDialogOpen} onOpenChange={setTrashDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="mx-4 sm:mx-0">
           <AlertDialogHeader>
             <AlertDialogTitle>Empty Trash</AlertDialogTitle>
             <AlertDialogDescription>
               This action will permanently delete all tasks in your trash. This cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleEmptyTrash}
-              className="bg-destructive hover:bg-destructive/90"
+              className="bg-destructive hover:bg-destructive/90 w-full sm:w-auto"
               disabled={isLoading}
             >
               {isLoading ? 'Emptying...' : 'Empty Trash'}
@@ -493,15 +499,15 @@ export default function SettingsPage() {
 
       {/* Restore Confirmation Dialog */}
       <AlertDialog open={restoreDialogOpen} onOpenChange={setRestoreDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="mx-4 sm:mx-0">
           <AlertDialogHeader>
             <AlertDialogTitle>Restore Task</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to restore "{selectedTask?.title}"? This will move it back to your active tasks.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 if (selectedTask) {
@@ -509,6 +515,7 @@ export default function SettingsPage() {
                   setRestoreDialogOpen(false)
                 }
               }}
+              className="w-full sm:w-auto"
             >
               Restore
             </AlertDialogAction>
@@ -518,15 +525,15 @@ export default function SettingsPage() {
 
       {/* Permanent Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="mx-4 sm:mx-0">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Forever</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to permanently delete "{selectedTask?.title}"? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 if (selectedTask) {
@@ -534,7 +541,7 @@ export default function SettingsPage() {
                   setDeleteDialogOpen(false)
                 }
               }}
-              className="bg-destructive hover:bg-destructive/90"
+              className="bg-destructive hover:bg-destructive/90 w-full sm:w-auto"
             >
               Delete Forever
             </AlertDialogAction>
