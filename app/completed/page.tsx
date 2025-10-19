@@ -6,7 +6,7 @@ export default function CompletedPage() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       <div className="lg:pl-64">
         <div className="container mx-auto px-4 py-4 sm:py-6 lg:py-8 max-w-6xl">
-          <header className="mb-6 sm:mb-8">
+          <header className="mt-8 mb-6 sm:mb-8">
             <div className="flex items-center gap-2 sm:gap-3 mb-2">
               <CheckCircle2 className="h-6 w-6 sm:h-8 sm:w-8 flex-shrink-0" />
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">Completed Tasks</h1>

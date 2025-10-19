@@ -30,7 +30,7 @@ export default function CalendarPage() {
         <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
             <div className="lg:pl-64">
                 <div className="container mx-auto px-4 py-4 sm:py-6 lg:py-8 max-w-7xl">
-                    <div className="mb-6">
+                    <div className="mt-8 mb-6">
                         <h1 className="text-2xl sm:text-3xl font-bold">Calendar</h1>
                         <p className="text-muted-foreground">View your tasks and deadlines</p>
                     </div>

@@ -20,6 +20,7 @@ export interface ITask extends Document {
   userId: mongoose.Types.ObjectId
   isDeleted: boolean
   deletedAt?: Date
+  order: number
   createdAt: Date
   updatedAt: Date
 }
@@ -76,6 +77,10 @@ const TaskSchema = new Schema<ITask>({
   deletedAt: {
     type: Date,
   },
+  order: {
+    type: Number,
+    default: 0,
+  },
 }, {
   timestamps: true,
 })
@@ -85,5 +90,6 @@ TaskSchema.index({ userId: 1, completed: 1 })
 TaskSchema.index({ userId: 1, dueDate: 1 })
 TaskSchema.index({ userId: 1, isDeleted: 1 })
 TaskSchema.index({ deletedAt: 1 })
+TaskSchema.index({ userId: 1, order: 1 })
 
 export default mongoose.models.Task || mongoose.model<ITask>('Task', TaskSchema)

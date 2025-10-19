@@ -177,7 +177,7 @@ export function TaskFormModal({ editTask, open: controlledOpen, onOpenChange, tr
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
-              placeholder="Enter task description"
+              placeholder="Supports Markdown: lists, checkboxes, bullets"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}

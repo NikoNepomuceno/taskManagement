@@ -24,7 +24,7 @@ export async function GET() {
       })
     }
 
-    const tasks = await Task.find({ userId: user._id, isDeleted: { $ne: true } }).sort({ createdAt: -1 })
+    const tasks = await Task.find({ userId: user._id, isDeleted: { $ne: true } }).sort({ order: 1, createdAt: -1 })
     return NextResponse.json(tasks)
   } catch (error) {
     console.error('Error fetching tasks:', error)
@@ -54,6 +54,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { title, description, dueDate, startDate, endDate, priority = 'medium', color = '#3b82f6' } = body
 
+    // Get the highest order number for this user and add 1
+    const lastTask = await Task.findOne({ userId: user._id, isDeleted: { $ne: true } }).sort({ order: -1 })
+    const nextOrder = lastTask ? (lastTask.order || 0) + 1 : 0
+
     const task = new Task({
       title,
       description,
@@ -63,6 +67,7 @@ export async function POST(request: NextRequest) {
       priority,
       color,
       userId: user._id,
+      order: nextOrder,
     })
 
     await task.save()

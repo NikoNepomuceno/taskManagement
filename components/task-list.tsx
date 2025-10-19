@@ -16,7 +16,8 @@ import { TaskFormModal } from "./task-form-modal"
 import { DeleteConfirmationDialog } from "./delete-confirmation-dialog"
 import { CompletionConfirmationDialog } from "./completion-confirmation-dialog"
 import { Checkbox } from "@/components/ui/checkbox"
-import { cn } from "@/lib/utils"
+import { cn, stripMarkdown } from "@/lib/utils"
+import { LayoutToggle, type LayoutType } from "./layout-toggle"
 import {
   DndContext,
   closestCenter,
@@ -134,9 +135,7 @@ function SortableTaskItem({
                   </div>
                 </div>
                 {task.description && (
-                  <CardDescription className={cn("text-sm sm:text-base break-words", task.completed && "line-through")}>
-                    {task.description}
-                  </CardDescription>
+                  <CardDescription className={cn("text-sm sm:text-base break-words line-clamp-1", task.completed && "line-through")}>{stripMarkdown(task.description)}</CardDescription>
                 )}
               </div>
             </div>
@@ -233,6 +232,312 @@ function SortableTaskItem({
   )
 }
 
+// Grid layout task item (2-column)
+function GridTaskItem({
+  task,
+  status,
+  daysUntilDue,
+  selectedTask,
+  setSelectedTask,
+  handleViewFile,
+  handleEditTask,
+  handleDeleteClick,
+  handleCompletionClick,
+  showCompleted,
+  getStatusColor,
+  getStatusLabel,
+  getPriorityColor,
+  getPriorityLabel,
+}: SortableTaskItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "transition-opacity",
+        isDragging && "opacity-50"
+      )}
+    >
+      <Card className="hover:shadow-md transition-shadow h-full">
+        <CardHeader className="pb-2">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center gap-1 flex-1 min-w-0">
+              <Checkbox
+                checked={task.completed}
+                onCheckedChange={() => !task.completed ? handleCompletionClick(task) : handleCompletionClick(task)}
+                className="flex-shrink-0"
+              />
+              <div
+                {...attributes}
+                {...listeners}
+                className="cursor-grab active:cursor-grabbing p-1 hover:bg-gray-100 rounded"
+              >
+                <GripVertical className="h-3 w-3 text-gray-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <CardTitle
+                  className={cn("text-sm font-semibold break-words line-clamp-1", task.completed && "line-through text-muted-foreground")}
+                >
+                  <Link href={`/tasks/${task.id}`} className="hover:underline">
+                    {task.title}
+                  </Link>
+                </CardTitle>
+              </div>
+            </div>
+            <div className="flex gap-0.5 shrink-0">
+              {!showCompleted && (
+                <Button variant="ghost" size="icon" onClick={() => handleEditTask(task)} className="h-6 w-6">
+                  <Edit className="h-3 w-3" />
+                </Button>
+              )}
+              <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(task)} className="h-6 w-6">
+                <Trash2 className="h-3 w-3 text-destructive" />
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0 space-y-2">
+          <div className="flex gap-1 flex-wrap">
+            <Badge className={cn(getPriorityColor(task.priority || 'medium'), "text-xs px-1.5 py-0.5")}>
+              {getPriorityLabel(task.priority || 'medium')}
+            </Badge>
+            {!showCompleted && (
+              <Badge className={cn(getStatusColor(status), "text-xs px-1.5 py-0.5")}>{getStatusLabel(status)}</Badge>
+            )}
+          </div>
+          
+          {task.description && (
+            <CardDescription className={cn("text-xs break-words line-clamp-1", task.completed && "line-through")}>{stripMarkdown(task.description)}</CardDescription>
+          )}
+          
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center gap-1">
+              <Calendar className="h-3 w-3 text-muted-foreground" />
+              <span className="text-muted-foreground">
+                {daysUntilDue < 0
+                  ? `${Math.abs(daysUntilDue)}d overdue`
+                  : daysUntilDue === 0
+                    ? "Due today"
+                    : `${daysUntilDue}d left`}
+              </span>
+            </div>
+            {task.files.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-5 px-2 text-xs"
+                onClick={() => setSelectedTask(selectedTask?.id === task.id ? null : task)}
+              >
+                <Paperclip className="h-3 w-3 mr-1" />
+                {task.files.length}
+              </Button>
+            )}
+          </div>
+          
+          {selectedTask?.id === task.id && task.files.length > 0 && (
+            <div className="space-y-1 pt-2 border-t">
+              {task.files.map((file) => (
+                <div
+                  key={file.id}
+                  className="flex items-center justify-between rounded border bg-muted/50 p-2"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium truncate">{file.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {(file.size / 1024).toFixed(1)} KB
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button variant="outline" size="sm" onClick={() => handleViewFile(file)} className="h-5 px-2">
+                      <Eye className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const link = document.createElement("a")
+                        link.href = file.data
+                        link.download = file.name
+                        link.click()
+                      }}
+                      className="h-5 px-2"
+                    >
+                      <Paperclip className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// List layout task item
+function ListTaskItem({
+  task,
+  status,
+  daysUntilDue,
+  selectedTask,
+  setSelectedTask,
+  handleViewFile,
+  handleEditTask,
+  handleDeleteClick,
+  handleCompletionClick,
+  showCompleted,
+  getStatusColor,
+  getStatusLabel,
+  getPriorityColor,
+  getPriorityLabel,
+}: SortableTaskItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "transition-opacity",
+        isDragging && "opacity-50"
+      )}
+    >
+      <div className="flex items-center gap-3 p-4 border rounded-lg hover:shadow-sm transition-shadow bg-card">
+        <div className="flex items-center gap-2">
+          <Checkbox
+            checked={task.completed}
+            onCheckedChange={() => !task.completed ? handleCompletionClick(task) : handleCompletionClick(task)}
+            className="flex-shrink-0"
+          />
+          <div
+            {...attributes}
+            {...listeners}
+            className="cursor-grab active:cursor-grabbing p-1 hover:bg-gray-100 rounded"
+          >
+            <GripVertical className="h-4 w-4 text-gray-400" />
+          </div>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <Link 
+              href={`/tasks/${task.id}`} 
+              className={cn("font-medium hover:underline truncate flex-1", task.completed && "line-through text-muted-foreground")}
+            >
+              {task.title}
+            </Link>
+            <div className="flex gap-1 flex-shrink-0">
+              <Badge className={cn(getPriorityColor(task.priority || 'medium'), "text-xs")}>
+                {getPriorityLabel(task.priority || 'medium')}
+              </Badge>
+              {!showCompleted && (
+                <Badge className={cn(getStatusColor(status), "text-xs")}>{getStatusLabel(status)}</Badge>
+              )}
+            </div>
+          </div>
+          {task.description && (
+            <p className={cn("text-sm text-muted-foreground line-clamp-1", task.completed && "line-through")}>{stripMarkdown(task.description)}</p>
+          )}
+        </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Calendar className="h-4 w-4" />
+          <span>
+            {daysUntilDue < 0
+              ? `${Math.abs(daysUntilDue)}d overdue`
+              : daysUntilDue === 0
+                ? "Due today"
+                : `${daysUntilDue}d left`}
+          </span>
+        </div>
+        <div className="flex items-center gap-1">
+          {task.files.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedTask(selectedTask?.id === task.id ? null : task)}
+              className="h-8 w-8 p-0"
+            >
+              <Paperclip className="h-4 w-4" />
+            </Button>
+          )}
+          {!showCompleted && (
+            <Button variant="ghost" size="sm" onClick={() => handleEditTask(task)} className="h-8 w-8 p-0">
+              <Edit className="h-4 w-4" />
+            </Button>
+          )}
+          <Button variant="ghost" size="sm" onClick={() => handleDeleteClick(task)} className="h-8 w-8 p-0">
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
+        </div>
+      </div>
+      {selectedTask?.id === task.id && task.files.length > 0 && (
+        <div className="mt-2 p-3 border-t bg-muted/30 rounded-b-lg">
+          <div className="space-y-2">
+            {task.files.map((file) => (
+              <div
+                key={file.id}
+                className="flex items-center justify-between rounded-lg border bg-background p-2"
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{file.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {(file.size / 1024).toFixed(1)} KB •{" "}
+                    {format(new Date(file.uploadedAt), "MMM dd, yyyy")}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => handleViewFile(file)}>
+                    <Eye className="h-4 w-4 mr-1" />
+                    View
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const link = document.createElement("a")
+                      link.href = file.data
+                      link.download = file.name
+                      link.click()
+                    }}
+                  >
+                    Download
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function TaskList({ showCompleted = false }: TaskListProps) {
   const { tasks, deleteTask, toggleTaskCompletion, reorderTasks, isLoading, error } = useTasks()
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
@@ -246,6 +551,7 @@ export function TaskList({ showCompleted = false }: TaskListProps) {
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null)
   const [completionDialogOpen, setCompletionDialogOpen] = useState(false)
   const [taskToComplete, setTaskToComplete] = useState<Task | null>(null)
+  const [layout, setLayout] = useState<LayoutType>("card")
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -254,11 +560,11 @@ export function TaskList({ showCompleted = false }: TaskListProps) {
     })
   )
 
-  function handleDragEnd(event: DragEndEvent) {
+  async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
 
     if (active.id !== over?.id) {
-      reorderTasks(active.id as string, over?.id as string)
+      await reorderTasks(active.id as string, over?.id as string)
     }
   }
 
@@ -338,35 +644,8 @@ export function TaskList({ showCompleted = false }: TaskListProps) {
       filtered = filtered.filter((task) => getTaskStatus(task) === statusFilter)
     }
 
-    // Sort by priority first, then by urgency
-    const priorityOrder: Record<string, number> = {
-      high: 0,
-      medium: 1,
-      low: 2,
-    }
-
-    const statusOrder: Record<TaskStatus, number> = {
-      overdue: 0,
-      urgent: 1,
-      approaching: 2,
-      "on-track": 3,
-      pending: 4,
-    }
-
-    return filtered.sort((a, b) => {
-      // First sort by priority
-      const priorityA = priorityOrder[a.priority || 'medium']
-      const priorityB = priorityOrder[b.priority || 'medium']
-      
-      if (priorityA !== priorityB) {
-        return priorityA - priorityB
-      }
-      
-      // Then sort by status/urgency
-      const statusA = getTaskStatus(a)
-      const statusB = getTaskStatus(b)
-      return statusOrder[statusA] - statusOrder[statusB]
-    })
+    // Sort by persisted manual order so drag-and-drop is reflected
+    return filtered.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
   }, [tasks, searchQuery, statusFilter, showCompleted])
 
   const handleViewFile = (file: TaskFile) => {
@@ -460,11 +739,14 @@ export function TaskList({ showCompleted = false }: TaskListProps) {
   return (
     <>
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h2 className="text-2xl font-bold">{showCompleted ? "Completed Tasks" : "Your Tasks"}</h2>
-          <Badge variant="secondary">
-            {filteredAndSortedTasks.length} of {tasks.filter((task) => task.completed === showCompleted).length}
-          </Badge>
+          <div className="flex items-center gap-3">
+            <Badge variant="secondary">
+              {filteredAndSortedTasks.length} of {tasks.filter((task) => task.completed === showCompleted).length}
+            </Badge>
+            <LayoutToggle layout={layout} onLayoutChange={setLayout} />
+          </div>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
@@ -509,32 +791,40 @@ export function TaskList({ showCompleted = false }: TaskListProps) {
             onDragEnd={handleDragEnd}
           >
             <SortableContext items={filteredAndSortedTasks.map(task => task.id)} strategy={verticalListSortingStrategy}>
-              <div className="grid gap-4">
+              <div className={cn(
+                "grid gap-4",
+                layout === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
+              )}>
                 {filteredAndSortedTasks.map((task) => {
                   const status = getTaskStatus(task)
                   const daysUntilDue = Math.ceil(
                     (new Date(task.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24),
                   )
 
-                  return (
-                    <SortableTaskItem
-                      key={task.id}
-                      task={task}
-                      status={status}
-                      daysUntilDue={daysUntilDue}
-                      selectedTask={selectedTask}
-                      setSelectedTask={setSelectedTask}
-                      handleViewFile={handleViewFile}
-                      handleEditTask={handleEditTask}
-                      handleDeleteClick={handleDeleteClick}
-                      handleCompletionClick={handleCompletionClick}
-                      showCompleted={showCompleted}
-                      getStatusColor={getStatusColor}
-                      getStatusLabel={getStatusLabel}
-                      getPriorityColor={getPriorityColor}
-                      getPriorityLabel={getPriorityLabel}
-                    />
-                  )
+                  const commonProps = {
+                    task,
+                    status,
+                    daysUntilDue,
+                    selectedTask,
+                    setSelectedTask,
+                    handleViewFile,
+                    handleEditTask,
+                    handleDeleteClick,
+                    handleCompletionClick,
+                    showCompleted,
+                    getStatusColor,
+                    getStatusLabel,
+                    getPriorityColor,
+                    getPriorityLabel,
+                  }
+
+                  if (layout === "list") {
+                    return <ListTaskItem key={task.id} {...commonProps} />
+                  } else if (layout === "grid") {
+                    return <GridTaskItem key={task.id} {...commonProps} />
+                  } else {
+                    return <SortableTaskItem key={task.id} {...commonProps} />
+                  }
                 })}
               </div>
             </SortableContext>

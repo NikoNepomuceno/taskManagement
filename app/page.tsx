@@ -7,7 +7,7 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       <div className="lg:pl-64">
         <div className="container mx-auto px-4 py-4 sm:py-6 lg:py-8 max-w-6xl">
-          <header className="mb-6 sm:mb-8">
+          <header className="mt-8 mb-6 sm:mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 sm:gap-3 mb-2">

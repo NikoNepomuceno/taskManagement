@@ -14,7 +14,7 @@ interface TaskContextType {
   addFileToTask: (taskId: string, file: TaskFile) => Promise<void>
   removeFileFromTask: (taskId: string, fileId: string) => Promise<void>
   toggleTaskCompletion: (id: string) => Promise<void>
-  reorderTasks: (activeId: string, overId: string) => void
+  reorderTasks: (activeId: string, overId: string) => Promise<void>
   isLoading: boolean
   error: string | null
   refetchTasks: () => Promise<void>
@@ -67,6 +67,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         files: task.attachments || [],
         completed: task.completed || false,
         color: task.color || '#3b82f6',
+        order: task.order || 0,
       }))
       
       setTasks(formattedTasks)
@@ -136,6 +137,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         updatedAt: new Date(newTask.updatedAt),
         files: taskData.files,
         completed: false,
+        order: newTask.order || 0,
       }
       
       setTasks((prev) => [...prev, formattedTask])
@@ -246,7 +248,11 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     await updateTask(id, { completed: !task.completed })
   }
 
-  const reorderTasks = (activeId: string, overId: string) => {
+  const reorderTasks = async (activeId: string, overId: string) => {
+    if (!session?.user?.email) return
+
+    // Compute the new order locally and use it for both UI and API
+    let newItemsSnapshot: Task[] = []
     setTasks((items) => {
       const oldIndex = items.findIndex((item) => item.id === activeId)
       const newIndex = items.findIndex((item) => item.id === overId)
@@ -256,9 +262,33 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       const newItems = [...items]
       const [removed] = newItems.splice(oldIndex, 1)
       newItems.splice(newIndex, 0, removed)
-      
-      return newItems
+
+      // assign sequential order so sorting uses it
+      const reindexed = newItems.map((t, index) => ({ ...t, order: index }))
+      newItemsSnapshot = reindexed
+      return reindexed
     })
+
+    // Persist the new order to the database
+    try {
+      const response = await fetch('/api/tasks/reorder', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          taskIds: newItemsSnapshot.map(task => task.id).filter(Boolean)
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to reorder tasks')
+      }
+    } catch (error) {
+      console.error('Error reordering tasks:', error)
+      // Optionally show an error notification to the user
+      notifyError('Failed to save task order')
+    }
   }
 
   return (

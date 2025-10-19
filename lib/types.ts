@@ -21,6 +21,7 @@ export interface Task {
   color?: string
   priority?: 'low' | 'medium' | 'high'
   dueDate?: Date // For database compatibility
+  order?: number
 }
 
 export type TaskStatus = "pending" | "on-track" | "approaching" | "urgent" | "overdue"

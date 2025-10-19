@@ -55,14 +55,16 @@ export function Sidebar() {
   return (
     <>
       {/* Mobile menu button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="fixed top-4 left-4 z-50 lg:hidden"
-        onClick={() => setMobileOpen(!mobileOpen)}
-      >
-        {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-      </Button>
+      <div className="fixed top-3 left-3 z-50 lg:hidden">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 border shadow-sm rounded-md h-9 w-9"
+          onClick={() => setMobileOpen(!mobileOpen)}
+        >
+          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </Button>
+      </div>
 
       {/* Overlay for mobile */}
       {mobileOpen && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setMobileOpen(false)} />}
