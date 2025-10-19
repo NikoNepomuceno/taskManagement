@@ -1,3 +1,5 @@
+'use client'
+
 import Swal, { SweetAlertIcon } from 'sweetalert2'
 
 type NotifyOptions = {
@@ -6,6 +8,7 @@ type NotifyOptions = {
   icon?: SweetAlertIcon
   timer?: number
   showProgressBar?: boolean
+  // Note: SweetAlert2 toasts ignore allowOutsideClick. Kept here for API compatibility but not used for toasts.
   allowOutsideClick?: boolean
   customClass?: {
     container?: string
@@ -26,7 +29,6 @@ export function notify(options: NotifyOptions) {
     icon = 'info', 
     timer = 2000, 
     showProgressBar = true,
-    allowOutsideClick = true,
     customClass
   } = options
   
@@ -39,7 +41,6 @@ export function notify(options: NotifyOptions) {
     showConfirmButton: false,
     timer,
     timerProgressBar: showProgressBar,
-    allowOutsideClick,
     customClass: {
       container: 'swal2-toast-container',
       popup: 'swal2-toast-popup',
@@ -119,7 +120,7 @@ export function notifyLoading(message: string, title = 'Loading...') {
     toast: true,
     position: 'top-end',
     showConfirmButton: false,
-    allowOutsideClick: false,
+    // Toasts do not support allowOutsideClick; omit to avoid warnings
     didOpen: () => {
       Swal.showLoading()
       const popup = document.querySelector('.swal2-toast-popup')

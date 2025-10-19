@@ -31,12 +31,10 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   // Fetch tasks from database
   const fetchTasks = async () => {
     if (!session?.user?.email) {
-      console.log('No session or user email, skipping fetch')
       setTasks([]) // Clear tasks when no session
       return
     }
     
-    console.log('Fetching tasks for user:', session.user.email)
     setIsLoading(true)
     setError(null)
     try {
@@ -87,10 +85,8 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   // Load tasks when session is available
   useEffect(() => {
     if (session?.user?.email) {
-      console.log('Session available, fetching tasks')
       fetchTasks()
     } else {
-      console.log('No session, clearing tasks')
       setTasks([])
     }
   }, [session])
